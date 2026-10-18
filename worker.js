@@ -77,13 +77,18 @@ async function handleModels() {
   return json({ object: "list", data: catalog, kilo_total_models: all.length });
 }
 
-async function proxy(request, url, pathname) {
+async function proxy(request, url, pathname, env) {
   const auth = request.headers.get("authorization") || "";
   const apiKey = request.headers.get("x-api-key") || "";
 
   const headers = new Headers({ "content-type": "application/json" });
-  if (auth) headers.set("authorization", auth);
-  if (apiKey) headers.set("x-api-key", apiKey);
+  // Kilo rejects *any* invalid Authorization outright — even for free models
+  // (harnesses like Hermes always send a placeholder key). Only forward the
+  // header when it looks like a real Kilo key (sk-...); otherwise drop it so
+  // the request rides the keyless free tier.
+  const looksReal = /^(sk-|pk-)/i.test(auth.replace(/^Bearer\s+/i, "")) || /^(sk-|pk-)/i.test(apiKey);
+  if (auth && looksReal) headers.set("authorization", auth);
+  if (apiKey && looksReal) headers.set("x-api-key", apiKey);
   const av = request.headers.get("anthropic-version");
   if (av) headers.set("anthropic-version", av);
   const ab = request.headers.get("anthropic-beta");
@@ -154,6 +159,6 @@ export default {
       );
     }
 
-    return proxy(request, url, path);
+    return proxy(request, url, path, env);
   },
 };
