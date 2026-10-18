@@ -11,22 +11,36 @@ Kilo's free tier (`api.kilo.ai/api/gateway`) requires **no auth at all** and
 natively serves all three wire protocols. This worker is a transparent proxy
 plus a free-model catalog — no request rewriting, no client simulation.
 
-## Free models (17 in catalog, 14 verified 2026-10-18)
+## Free models (current catalog)
 
-`GET /v1/models` returns the live list (refreshed every 5 min, filtered with
-the same rule as [anxkhn/free-kilo-gateway](https://github.com/anxkhn/free-kilo-gateway):
-price = 0 and "free" in the name). Highlights:
+17 in the catalog — `GET /v1/models` returns this list live (refreshed every
+5 min, filtered with the same rule as
+[anxkhn/free-kilo-gateway](https://github.com/anxkhn/free-kilo-gateway):
+price = 0 and "free" in the name). Snapshot 2026-10-18:
 
-- `kilo-auto/free` — auto-router (256K ctx)
-- `reflection/beam-free` (1048K ctx)
-- `nvidia/nemotron-3-ultra-550b-a55b:free` (1000K ctx)
-- `nvidia/nemotron-3.5-super-vl:free` (vision, 1000K ctx)
-- `thinkingmachines/inkling-small:free` (vision, 1048K ctx)
-- `cohere/north-mini-code:free`, `poolside/laguna-s-2.1:free`, ...
+| Model | Context | Modalities | Status |
+|---|---|---|---|
+| `kilo-auto/free` | 256K | text | ✅ verified |
+| `reflection/beam-free` | 1048K | text | ✅ verified |
+| `nvidia/nemotron-3-ultra-550b-a55b:free` | 1000K | text | ✅ verified |
+| `nvidia/nemotron-3.5-super-vl:free` | 1000K | text+image+video | ✅ verified |
+| `nvidia/nemotron-3.5-lightning:free` | 1000K | text | ✅ verified (slow, ~2 min) |
+| `nvidia/nemotron-3-super-120b-a12b:free` | 262K | text | ✅ verified |
+| `nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free` | 256K | text+audio+image+video | ✅ verified |
+| `nvidia/nemotron-3.5-content-safety:free` | 128K | text+image | ✅ verified |
+| `cohere/north-mini-code:free` | 256K | text | ✅ verified |
+| `poolside/laguna-s-2.1:free` | 262K | text | ✅ verified |
+| `poolside/laguna-xs-2.1:free` | 262K | text | ⚠️ works, provider 429 at test time |
+| `thinkingmachines/inkling-small:free` | 1048K | text+image+audio | ⚠️ daily cap hit at test time (`limit_rpd`) |
+| `dots-studio/dots-3-note-preview:free` | 512K | text+image | ✅ verified |
+| `xingchen-agi/xing4.0-29b-a4b:free` | 262K | text | ✅ verified |
+| `liquid/lfm-2.5-2.6b:free` | 65K | text | ✅ verified |
+| `openrouter/free` | 200K | text+image | ✅ verified — routes to OpenRouter free models |
+| `stealth/glyph-cluster` | 256K | text | ⚠️ returns encrypted reasoning, empty content |
 
 Known quirks: some providers enforce **per-model daily caps** (`limit_rpd`
-429 — switch model or wait for reset); `stealth/glyph-cluster` returns
-encrypted-reasoning with empty content.
+429 — switch model or wait for reset for that model). The catalog rotates
+upstream; `/v1/models` is always authoritative.
 
 ## Endpoints
 
